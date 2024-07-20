@@ -898,16 +898,12 @@
                             chk_product = $("input[name='chk_product[]']:checked").map(function () {
                                 return this.value;
                             }).get();
-                            var _token = $('input[name="_token"]').val();
+                            var cmp_pro = '';
 
-                            $.ajax({
-                                url: '{{url("/submit-compare")}}',
-                                method: 'POST',
-                                data: {chk_product:chk_product,idProduct:idProduct, _token:_token},
-                                success:function(data){
-                                    window.location.href = '../kidolshop/compare';
-                                }
-                            });
+                            for(i = 0; i < chk_product.length; i++){  
+                                cmp_pro += ',' + chk_product[i];
+                            }
+                            window.location.href = '../kidolshop/compare?product=' +idProduct+cmp_pro;
                         });
                     }
                 });

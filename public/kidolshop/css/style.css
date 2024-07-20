@@ -57,7 +57,7 @@
 }
 
 :root {
-  --primary-color: #f379a7;
+  --primary-color: #068513;
 }
 
 
@@ -163,7 +163,7 @@ a:focus {
 
 a:hover {
   text-decoration: none;
-  color: #f379a7;
+  color: #23d60f;
 }
 
 button, input[type="submit"] {
@@ -7481,7 +7481,6 @@ blockquote p {
 
 .container__address-content {
   padding: 28px 30px 24px;
-  border-bottom: 1px solid #efefef;
 }
 
 .container__address-content-hd {
@@ -7551,7 +7550,7 @@ h5,
 .logo .text,
 .flex-caption .nav-holder a,button
 {
-  font-family: 'Coiny', cursive;
+  font-family: 'Lora', serif;
 }
 
 .products-holder .product-item .add-button,
@@ -9873,4 +9872,16 @@ input[type=checkbox] {
   height: 20px;
   line-height: 20px;
   text-align: center;
+}
+
+.paid_tag {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: rotate(-30deg);
+  border: 5px solid #f379a7;
+  border-radius: 5px;
+  right: 20%;
+  top: 25%;
 }

@@ -20225,14 +20225,17 @@ input[type=number] {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  height:162px; 
+  border-radius:10px;
 }
 
-.list-product {
+/* .list-product {
   height: 162.67px;
-}
+} */
 
 .product-item {
   display: inline-block;
+  padding: 15px;
 }
 
 .product-title {
@@ -20333,4 +20336,16 @@ input[type=number] {
 
 .card-body--AllTime:last-child {
   padding: 20px;
+}
+
+.paid_tag {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: rotate(-30deg);
+  border: 5px solid #32BDEA;
+  border-radius: 5px;
+  right: -60%;
+  top: -55%;
 }
