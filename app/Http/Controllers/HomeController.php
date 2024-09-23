@@ -19,20 +19,42 @@ class HomeController extends Controller
         $list_category = Category::get();
         $list_brand = Brand::get();
         $list_blog = Blog::where('Status','1')->get();
+        $categories = Category::with([
+            'products' => function($query) {
+                $query->with(['productImages', 'productAttributes']);
+            }
+        ])->get();
+    //     $categories = Product::join('productimage', 'productimage.idProduct', '=', 'product.idProduct')
+    // ->with('productAttributes') // Nếu cần các thuộc tính sản phẩm
+    // ->where('product.StatusPro', 1)
+    // ->orderBy('product.Sold', 'DESC')
+    // ->distinct()
+    // ->get();
         $recommend_pds_arrays = [];
 
         $sub30days = Carbon::now()->subDays(30)->toDateString();
         if(Session::get('idCustomer') == '') $idCustomer = session()->getId();
         else $idCustomer = Session::get('idCustomer');
 
-        $list_new_pd = Product::join('productimage','productimage.idProduct','=','product.idProduct')
-            ->whereBetween('product.created_at',[$sub30days,now()])->where('StatusPro','1')->get();
+        $list_new_pd = Product::with('productAttributes')
+        ->join('productimage', 'productimage.idProduct', '=', 'product.idProduct')
+        ->whereBetween('product.created_at', [$sub30days, now()])
+        ->where('StatusPro', '1')
+        ->get();
 
-        $list_featured_pd = Product::join('productimage','productimage.idProduct','=','product.idProduct')
-            ->whereBetween('product.created_at',[$sub30days,now()])->where('StatusPro','1')->orderBy('Sold','DESC')->get();
+            $list_featured_pd = Product::with('productAttributes')
+            ->join('productimage', 'productimage.idProduct', '=', 'product.idProduct')
+            ->whereBetween('product.created_at', [$sub30days, now()])
+            ->where('StatusPro', '1')
+            ->orderBy('Sold', 'DESC')
+            ->get();
 
-        $list_bestsellers_pd = Product::join('productimage','productimage.idProduct','=','product.idProduct')
-        ->where('StatusPro','1')->orderBy('Sold','DESC')->get();
+        $list_bestsellers_pd = Product::with('productAttributes')
+        ->join('productimage', 'productimage.idProduct', '=', 'product.idProduct')
+        ->where('product.StatusPro', '1')
+        ->orderBy('product.Sold', 'DESC')
+        ->distinct() // Đảm bảo không bị lặp
+        ->get();
             
         if(Viewer::where('idCustomer',$idCustomer)->count() == 0) $recommend_pds = $list_bestsellers_pd;
         else {
@@ -88,6 +110,6 @@ class HomeController extends Controller
             }
         }
 
-        return view('shop.home')->with(compact('list_category','list_brand','list_new_pd','list_featured_pd','list_bestsellers_pd','list_blog','recommend_pds'));
+        return view('shop.home')->with(compact('list_category','list_brand','list_new_pd','list_featured_pd','list_bestsellers_pd','list_blog','recommend_pds','categories'));
     }
 }

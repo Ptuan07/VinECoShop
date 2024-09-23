@@ -17,6 +17,13 @@ use App\Models\ProductAttriBute;
 use App\Models\Voucher;
 use App\Models\WishList;
 use App\Models\Viewer;
+use App\Models\WareHouse;
+use App\Models\Location;
+use App\Models\Shelves;
+use App\Models\OrderWarehouse;
+use App\Models\PurchaseOrderDetails;
+use Illuminate\Support\Facades\DB;
+
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Session;
 use PDO;
@@ -28,12 +35,39 @@ class ProductController extends Controller
         // Chuyển đến trang quản lý sản phẩm
         public function manage_products(){
             $list_product = Product::join('brand','brand.idBrand','=','product.idBrand')
-                ->join('category','category.idCategory','=','product.idCategory')
-                ->join('productimage','productimage.idProduct','=','product.idProduct')->get();
+            ->join('category','category.idCategory','=','product.idCategory')
+            ->join('productimage','productimage.idProduct','=','product.idProduct')->get();
+        $count_product = Product::count();
             $count_product = Product::count();
 
             return view("admin.product.manage-products")->with(compact('list_product','count_product'));
         }
+
+        public function manage_expiry_products($idProduct){
+                    // Lấy danh sách các đơn nhập theo sản phẩm
+                $purchaseOrders = PurchaseOrderDetails::where('purchaseorderdetails.idProduct', $idProduct)
+                ->join('product', 'purchaseorderdetails.idProduct', '=', 'product.idProduct')
+                ->join('purchaseorder', 'purchaseorder.idPurchaseOrder', '=', 'purchaseorderdetails.idPurchaseOrder')
+                ->leftJoin('productimage', 'product.idProduct', '=', 'productimage.idProduct')
+                
+                // ->with('orderProductAttributes') // Kèm theo các phân loại sản phẩm
+                ->orderBy('expiryDate', 'asc') // Sắp xếp theo hạn sử dụng (FIFO)
+                ->get();
+
+            // dd($purchaseOrders);
+            // die();
+            return view("admin.product.expiry-products")->with(compact('purchaseOrders'));
+        }
+        // Hàm tính và cập nhật tổng tiền đơn nhập
+            public function updateTotalAmount($idPurchaseOrder) {
+                $totalAmount = DB::table('purchaseOrderDetail')
+                                ->where('idPurchaseOrder', $idPurchaseOrder)
+                                ->sum(DB::raw('Quantity * Price'));
+
+                DB::table('purchaseOrder')
+                    ->where('idPurchaseOrder', $idPurchaseOrder)
+                    ->update(['total_price' => $totalAmount, 'updated_at' => now()]);
+            }
 
         // Chuyển đến trang thêm sản phẩm
         public function add_product(){
@@ -58,12 +92,69 @@ class ProductController extends Controller
             $name_attribute = ProductAttriBute::join('attribute_value','attribute_value.idAttrValue','=','product_attribute.idAttrValue')
                 ->join('attribute','attribute.idAttribute','=','attribute_value.idAttribute')
                 ->where('product_attribute.idProduct', $idProduct)->first();
+        
             
             $list_attribute = Attribute::get();
             $list_category = Category::get();
             $list_brand = Brand::get();
+            $list_warehouse = Warehouse::get();
 
-            return view("admin.product.edit-product")->with(compact('product','list_category','list_brand','list_attribute','list_pd_attr','name_attribute'));
+            $selectedWarehouses = OrderWarehouse::where('idProduct', $idProduct)
+            ->pluck('idWareHouse')
+            ->toArray();
+
+        $selectedLocations = [];
+        $selectedShelves = [];
+
+        foreach ($selectedWarehouses as $warehouseId) {
+            $locations = Location::where('idWareHouse', $warehouseId)->get();
+            $selectedLocations[$warehouseId] = OrderWarehouse::where('idProduct', $idProduct)
+                ->where('idWareHouse', $warehouseId)
+                ->pluck('idLocation')
+                ->toArray();
+
+            foreach ($selectedLocations[$warehouseId] as $locationId) {
+                $shelves = Shelves::where('idLocation', $locationId)->get();
+                $selectedShelves[$locationId] = OrderWarehouse::where('idProduct', $idProduct)
+                    ->where('idLocation', $locationId)
+                    ->pluck('idShelves')
+                    ->toArray();
+            }
+        }
+        
+        $warehouse_names = Warehouse::whereIn('idWareHouse', $selectedWarehouses)
+            ->pluck('wareName', 'idWareHouse')
+            ->toArray();
+
+        $location_names = [];
+        $shelf_names = [];
+
+        foreach ($selectedWarehouses as $warehouseId) {
+            $location_names[$warehouseId] = Location::whereIn('idLocation', $selectedLocations[$warehouseId])
+                ->pluck('location', 'idLocation')
+                ->toArray();
+                
+
+            foreach ($selectedLocations[$warehouseId] as $locationId) {
+                $shelf_names[$locationId] = Shelves::whereIn('idShelves', $selectedShelves[$locationId])
+                    ->pluck('idShelves', 'idShelves')
+                    ->toArray();
+            }
+        }
+       
+
+            return view("admin.product.edit-product")->with(compact('product','list_category',
+            'list_brand',
+            'list_attribute',
+            'list_pd_attr',
+            'name_attribute',
+            'selectedWarehouses',
+            'selectedLocations',
+            'selectedShelves',
+            'warehouse_names',
+            'location_names',
+            'shelf_names',
+            'list_warehouse'));
         }
 
         // Chuyển đến trang quản lý khuyến mãi
@@ -111,62 +202,68 @@ class ProductController extends Controller
         public function submit_add_product(Request $request){
             $data = $request->all();
 
+            // Kiểm tra xem sản phẩm đã tồn tại hay chưa
             $select_product = Product::where('ProductSlug', $data['ProductSlug'])->first();
-
+        
             if($select_product){
                 return redirect()->back()->with('error', 'Sản phẩm này đã tồn tại');
-            }else{
+            } else {
                 $product = new Product();
                 $product_image = new ProductImage();
                 $product->ProductName = $data['ProductName'];
                 $product->idCategory = $data['idCategory'];
                 $product->idBrand = $data['idBrand'];
-                $product->Price = $data['Price'];
+                // $product->Price = $data['Price'];
                 $product->QuantityTotal = $data['QuantityTotal'];
+                $product->statusPro = $data['statusPro'];
                 $product->ShortDes = $data['ShortDes'];
                 $product->DesProduct = $data['DesProduct'];
                 $product->ProductSlug = $data['ProductSlug'];
                 $get_image = $request->file('ImageName');
                 $timestamp = now();
-                
+        
                 $product->save();
-                $get_pd = Product::where('created_at',$timestamp)->first();
-
-                // Thêm phân loại vào Product_Attribute
+                $get_pd = Product::where('created_at', $timestamp)->first();
+                // Thêm phân loại vào bảng Product_Attribute
                 if($request->qty_attr){
                     foreach($data['qty_attr'] as $key => $qty_attr)
                     {
+                        $price_attr = $data['price_attr'][$key];  // Lấy giá tiền cho từng phân loại
                         $data_all = array(
                             'idProduct' => $get_pd->idProduct,
                             'idAttrValue' => $data['chk_attr'][$key],
                             'Quantity' => $qty_attr,
+                            'Price' => $price_attr,  // Thêm trường giá tiền cho phân loại
                             'created_at' => now(),
                             'updated_at' => now()
                         );
                         ProductAttriBute::insert($data_all);
                     }
-                }else{
+                } else {
                     $data_all = array(
                         'idProduct' => $get_pd->idProduct,
                         'Quantity' => $data['QuantityTotal'],
+                        'Price' => $data['Price'],  // Giá tiền mặc định nếu không có phân loại
                         'created_at' => now(),
                         'updated_at' => now()
                     );
                     ProductAttriBute::insert($data_all);
                 }
-
-                // Thêm hình ảnh vào table ProductImage
+        
+                // Thêm hình ảnh vào bảng ProductImage
+                $images = [];
                 foreach($get_image as $image){
                     $get_name_image = $image->getClientOriginalName();
-                    $name_image = current(explode('.',$get_name_image));
-                    $new_image = $name_image.rand(0,99).'.'.$image->getClientOriginalExtension();
-                    $image->storeAs('public/kidoldash/images/product',$new_image);
+                    $name_image = current(explode('.', $get_name_image));
+                    $new_image = $name_image . rand(0, 99) . '.' . $image->getClientOriginalExtension();
+                    $image->storeAs('public/kidoldash/images/product', $new_image);
                     $images[] = $new_image;
                 }
-
-                $product_image->ImageName=json_encode($images);
-                $product_image->idProduct= $get_pd->idProduct;
+        
+                $product_image->ImageName = json_encode($images);
+                $product_image->idProduct = $get_pd->idProduct;
                 $product_image->save();
+        
                 return redirect()->back()->with('message', 'Thêm sản phẩm thành công');
             }
         }
@@ -185,8 +282,10 @@ class ProductController extends Controller
                 $product->ProductName = $data['ProductName'];
                 $product->idCategory = $data['idCategory'];
                 $product->idBrand = $data['idBrand'];
-                $product->Price = $data['Price'];
+                // $product->Price = $data['Price'];
                 $product->QuantityTotal = $data['QuantityTotal'];
+                $product->statusPro = $data['statusPro'];
+
                 $product->ShortDes = $data['ShortDes'];
                 $product->DesProduct = $data['DesProduct'];
                 $product->ProductSlug = $data['ProductSlug'];
@@ -196,10 +295,12 @@ class ProductController extends Controller
                     ProductAttriBute::where('idProduct',$idProduct)->delete();
                     foreach($data['qty_attr'] as $key => $qty_attr)
                     {
+                        $price_attr = $data['price_attr'][$key];  // Lấy giá tiền cho từng phân loại
                         $data_all = array(
                             'idProduct' => $idProduct,
                             'idAttrValue' => $data['chk_attr'][$key],
                             'Quantity' => $qty_attr,
+                            'Price' => $price_attr,
                             'created_at' => now(),
                             'updated_at' => now()
                         );
@@ -210,10 +311,60 @@ class ProductController extends Controller
                     $data_all = array(
                         'idProduct' => $idProduct,
                         'Quantity' => $data['QuantityTotal'],
+                        'Price' => $data['Price'],  // Giá tiền mặc định nếu không có phân loại
                         'created_at' => now(),
                         'updated_at' => now()
                     );
                     ProductAttriBute::insert($data_all);
+                }
+                // Xóa các bản ghi cũ trong bảng trung gian orderwarehouse
+                $existingOrderWarehouses = OrderWarehouse::where('idProduct', $idProduct)->get();
+                $existingShelfIds = $existingOrderWarehouses->pluck('idShelves')->toArray();
+
+                OrderWarehouse::where('idProduct', $idProduct)->delete();
+
+                // Lưu các bản ghi mới và cập nhật trạng thái shelves
+                $newShelfIds = [];
+
+                if ($request->has('warehouses')) {
+                    foreach ($request->input('warehouses') as $warehouseId) {
+                        if ($request->has("locations.$warehouseId")) {
+                            foreach ($request->input("locations.$warehouseId") as $locationId) {
+                                if ($request->has("shelves.$locationId")) {
+                                    foreach ($request->input("shelves.$locationId") as $shelfId) {
+                                        $newShelfIds[] = $shelfId;
+
+                                        // Thêm bản ghi mới vào bảng orderwarehouse
+                                        $orderWarehouse = new OrderWarehouse();
+                                        // $orderWarehouse->idDetails = '';
+                                        $orderWarehouse->idWareHouse = $warehouseId;
+                                        $orderWarehouse->idLocation = $locationId;
+                                        $orderWarehouse->idShelves = $shelfId;
+                                        $orderWarehouse->idProduct = $idProduct;
+                                        $orderWarehouse->save();
+
+                                        // Cập nhật trạng thái của kệ (shelves) thành 'đầy'
+                                        $shelf = Shelves::find($shelfId);
+                                        if ($shelf) {
+                                            $shelf->status = 1; // Đánh dấu kệ là 'đầy'
+                                            $shelf->save();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Chuyển các kệ bị bỏ chọn từ trạng thái 'đầy' về 'rỗng'
+                $shelvesToUpdate = array_diff($existingShelfIds, $newShelfIds);
+
+                foreach ($shelvesToUpdate as $shelfId) {
+                    $shelf = Shelves::find($shelfId);
+                    if ($shelf) {
+                        $shelf->status = 0; // Đánh dấu kệ là 'rỗng'
+                        $shelf->save();
+                    }
                 }
                 
                 // Thêm hình ảnh vào table ProductImage
@@ -408,13 +559,16 @@ class ProductController extends Controller
                 $list_pd_attr = ProductAttriBute::join('attribute_value','attribute_value.idAttrValue','=','product_attribute.idAttrValue')
                     ->join('attribute','attribute.idAttribute','=','attribute_value.idAttribute')
                     ->where('product_attribute.idProduct', $this_pro->idProduct)->get();
-    
+                // dd($list_pd_attr);
+                // die();
                 $name_attribute = ProductAttriBute::join('attribute_value','attribute_value.idAttrValue','=','product_attribute.idAttrValue')
                     ->join('attribute','attribute.idAttribute','=','attribute_value.idAttribute')
                     ->where('product_attribute.idProduct', $this_pro->idProduct)->first();
     
-                $product = Product::join('productimage','productimage.idProduct','=','product.idProduct')->where('product.idProduct',$this_pro->idProduct)->first();
-
+                $product = Product::join('productimage','productimage.idProduct','=','product.idProduct')
+                ->join('product_attribute','product_attribute.idProduct','=','product.idProduct')
+                ->where('product.idProduct',$this_pro->idProduct)->first();
+               
                 $list_related_products = Product::join('productimage','productimage.idProduct','=','product.idProduct')
                     ->whereRaw("MATCH (ProductName) AGAINST (?)", Product::fullTextWildcards($this_pro->ProductName))
                     ->whereNotIn('product.idProduct',[$this_pro->idProduct])->where('StatusPro','1')
@@ -435,11 +589,14 @@ class ProductController extends Controller
             $sub30days = Carbon::now()->subDays(30)->toDateString();
             $list_category = Category::get();
             $list_brand = Brand::get();
-            $list_pd_query = Product::join('brand','brand.idBrand','=','product.idBrand')
-                ->join('category','category.idCategory','=','product.idCategory')
-                ->join('productimage','productimage.idProduct','=','product.idProduct')->where('StatusPro','1')
-                ->select('ImageName','product.*','BrandName','CategoryName');
-
+            $list_pd_query = Product::with('productAttributes')
+            ->join('brand', 'brand.idBrand', '=', 'product.idBrand')
+            ->join('category', 'category.idCategory', '=', 'product.idCategory')
+            ->join('productimage', 'productimage.idProduct', '=', 'product.idProduct')
+            ->where('StatusPro', '1')
+            ->select('ImageName', 'product.*')
+            ->orderBy('Sold', 'DESC'); // Thêm orderBy ở đây
+            
             if(isset($_GET['brand'])) $brand_arr = explode(",",$_GET['brand']);
             if(isset($_GET['category'])) $category_arr = explode(",",$_GET['category']);
 
@@ -477,7 +634,13 @@ class ProductController extends Controller
             $count_pd = $list_pd_query->count();
             $list_pd = $list_pd_query->paginate(15);
 
-            $top_bestsellers_pd = Product::join('productimage','productimage.idProduct','=','product.idProduct')->orderBy('Sold','DESC')->limit(3)->get();
+            $top_bestsellers_pd = Product::with('productAttributes')
+                ->join('productimage', 'productimage.idProduct', '=', 'product.idProduct')
+                ->where('product.StatusPro', '1')
+                ->orderBy('product.Sold', 'DESC')
+                ->distinct() // Đảm bảo không bị lặp
+                ->limit(3)
+                ->get();
 
             return view("shop.product.shop-all-product")->with(compact('list_category','list_brand','list_pd','count_pd','top_bestsellers_pd'));
         }

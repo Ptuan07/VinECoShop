@@ -16,3 +16,4 @@ class Brand extends Model
     //     return $this->hasMany('App\Models\Product');
     // }
 }
+ 

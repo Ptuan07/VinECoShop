@@ -28,7 +28,8 @@
                                         echo '<span class="text-danger">'.$error.'</span>';
                                         Session::put('error', null);
                                     }
-                                ?>                      
+                                ?>      
+                                              
                                 <div class="form-group">
                                     <label>Tên danh mục</label>
                                     <input type="text" name="CategoryName" class="form-control slug" onkeyup="ChangeToSlug()" placeholder="Nhập tên danh mục" required>

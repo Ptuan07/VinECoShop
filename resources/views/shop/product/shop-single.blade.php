@@ -2,7 +2,7 @@
 @section('content')
 
 <!--Page Banner Start-->
-<div class="page-banner" style="background-image: url(../public/kidolshop/images/banner/banner-shop.png)">
+<div class="page-banner" style="background-image: url(../public/kidolshop/images/banner/pngtree-organic-vegetables-promotion-simple-banner-picture-image_1070365.jpg)">
     <div class="container">
         <div class="page-banner-content text-center">
             <h2 class="title">Chi tiết sản phẩm</h2>
@@ -59,20 +59,25 @@
             <div class="col-lg-6">
                 <div class="shop-single-content">
                     <h3 class="title">{{$product->ProductName}}</h3>
-                    <span class="product-sku">Mã sản phẩm: <span>{{$product->idProduct}}</span></span>
-                    <div class="text-primary">Đã Bán: {{$product->Sold}} sản phẩm</div>
-                    <div class="text-primary">Còn Lại: {{$product->QuantityTotal}} sản phẩm</div>
-                    <div class="text-primary">Lượt Yêu Thích: {{$count_wish}} </div>
-                    <!-- <div class="product-rating">
-                        <ul class="rating-star">
-                            <li class="rating-on"><i class="fa fa-star-o"></i></li>
-                            <li class="rating-on"><i class="fa fa-star-o"></i></li>
-                            <li class="rating-on"><i class="fa fa-star-o"></i></li>
-                            <li class="rating-on"><i class="fa fa-star-o"></i></li>
-                            <li class="rating-on"><i class="fa fa-star-o"></i></li>
-                        </ul>
-                        <span>No reviews</span>
-                    </div> -->
+                    <div>
+                        <div class="product-rating">
+                            <span class="product-sku">Mã sản phẩm: <span>{{$product->idProduct}}  |</span></span>
+                            <ul class="rating-star">
+                                <li class="rating-on"><i class="fa fa-star-o"></i></li>
+                                <li class="rating-on"><i class="fa fa-star-o"></i></li>
+                                <li class="rating-on"><i class="fa fa-star-o"></i></li>
+                                <li class="rating-on"><i class="fa fa-star-o"></i></li>
+                                <li class="rating-on"><i class="fa fa-star-o"></i></li>
+                            </ul>
+                            <span>No reviews  |</span>
+                            <span class="ml-15">Đã Bán: {{$product->Sold}} sản phẩm</span>
+                        </div>
+                    </div>
+                    <div class="" style="font-size: 13px;">
+                        <span>Còn Lại: {{$product->QuantityTotal}} sản phẩm  |</span>
+                        <span class="ml-15">Lượt Yêu Thích: {{$count_wish}} </span>
+
+                    </div>
                     <div class="thumb-price">
                         @if($SalePrice < $product->Price)
                             <span class="old-price">{{number_format($product->Price,0,',','.')}}đ</span>
@@ -83,14 +88,13 @@
                         @endif
                     </div>
                     <div>{!!$product->ShortDes!!}</div>
-
                     <div class="shop-single-material pt-3">
                         <div class="material-title col-lg-2">{{$name_attribute->AttributeName}}:</div>
                         <ul class="material-list">
                             @foreach($list_pd_attr as $key => $pd_attr)
                             <li>
                                 <div class="material-radio">
-                                    <input type="radio" value="{{$pd_attr->idProAttr}}" class="AttrValName" name="material" id="{{$pd_attr->idProAttr}}" data-name="{{$pd_attr->AttrValName}}" data-qty="{{$pd_attr->Quantity}}">
+                                    <input type="radio" value="{{$pd_attr->idProAttr}}" class="AttrValName" name="material" id="{{$pd_attr->idProAttr}}" data-name="{{$pd_attr->AttrValName}}" data-qty="{{$pd_attr->Quantity}}" data-price="{{$pd_attr->Price}}">
                                     <label for="{{$pd_attr->idProAttr}}">{{$pd_attr->AttrValName}}</label>
                                 </div>
                             </li>
@@ -446,22 +450,28 @@
         var AttributeProduct = $('#AttributeName').val() + ': ' + $('.AttrValName').data("name");
         $('#AttributeProduct').val(AttributeProduct);
 
-        $("input:radio[name=material]").on('click',function(){
-            $(".qty-buy").val("1");
-            $('.alert-qty').html("");
-            $('.alert-add-to-cart').html("");
-            $('.alert-buy-now').html("");
-            $idAttribute = $(this).attr("id");
-            $AttrValName = $(this).data("name");
-            $Quantity = $(this).data("qty");
-            $('.qty-of-attr-label').html("Còn Lại: " +$Quantity);
-            $('.qty-of-attr').val($Quantity);
-            
-            AttributeProduct = $('#AttributeName').val() + ': ' + $AttrValName;
-            $('#AttributeProduct').val(AttributeProduct);
+        $("input:radio[name=material]").on('click', function(){
+    var idProAttr = $(this).attr("id");
+    var AttributeProduct = $('#AttributeName').val() + ': ' + $(this).data("name");
+    var Quantity = $(this).data("qty");
+    var Price = $(this).data("price");
+    var PriceFormatted = numberWithCommas(Price) + 'đ';  // Định dạng giá
 
-            $('#idProAttr').val($("#"+$idAttribute).val());
-        });
+    // Cập nhật thuộc tính sản phẩm
+    $('#AttributeProduct').val(AttributeProduct);
+    $('#idProAttr').val(idProAttr);
+    $('.qty-of-attr').val(Quantity);
+    $('.qty-of-attr-label').html("Còn Lại: " + Quantity);
+
+    // Cập nhật giá sản phẩm
+    $('#PriceNew').val(Price);
+    $('.thumb-price .current-price').html(PriceFormatted);
+});
+
+// Hàm để định dạng giá với dấu phân cách hàng nghìn
+function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
 
         $('.add-qty').on('click',function(){
             var $input = $(this).prev();

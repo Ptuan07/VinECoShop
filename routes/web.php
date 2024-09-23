@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\SupplierController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -23,6 +23,8 @@ Route::get('/store','ProductController@show_all_product');
 Route::get('/manage-products','ProductController@manage_products');
 Route::get('/add-product','ProductController@add_product');
 Route::get('/edit-product/{idProduct}','ProductController@edit_product');
+Route::get('/expiry-product/{idProduct}','ProductController@manage_expiry_products');
+
 Route::get('/delete-product/{idProduct}','ProductController@delete_product');
 Route::post('/submit-add-product','ProductController@submit_add_product');
 Route::post('/submit-edit-product/{idProduct}','ProductController@submit_edit_product');
@@ -78,6 +80,35 @@ Route::get('/confirmed-bill','BillController@confirmed_bill');
 Route::get('/bill-info/{idBill}','BillController@bill_info');
 Route::post('/confirm-bill/{idBill}','BillController@confirm_bill');
 Route::post('/delete-bill/{idBill}','BillController@delete_bill');
+Route::get('/delete-order/{idBill}','BillController@delete_order');
+
+
+//purchaseOrder/manage_purchase_order
+Route::get('/manage-purchase-order','PurchaseOrderController@manage_purchase_order');
+Route::get('/add-purchase-order','PurchaseOrderController@add_purchase_order');
+Route::get('/edit-order/{idPurchaseOrder}','PurchaseOrderController@edit_order');
+Route::post('/submit-add-purchase-order','PurchaseOrderController@submit_add_purchase_order');
+Route::post('/submit-edit-purchase-order/{idPurchaseOrder}','PurchaseOrderController@submit_edit_purchase_order');
+Route::get('/delete-purchase-order/{idPurchaseOrder}', 'PurchaseOrderController@deletePurchaseOrder');
+Route::post('/cancel-purchase-order/{idPurchaseOrder}', 'PurchaseOrderController@cancelPurchaseOrder');
+Route::get('/confirm-order/{idPurchaseOrder}','PurchaseOrderController@confirm_order');
+     
+//purchaseOrderDetails
+Route::get('/manage-purchase-order-details/{idPurchaseOrder}','PurchaseOrderController@manage_purchase_order_details');
+Route::get('/add-purchase-order-details/{idPurchaseOrder}','PurchaseOrderController@add_purchase_order_details');
+Route::get('/edit-purchase-order-details/{idPurchaseOrder}/{idDetails}/{idProduct}','PurchaseOrderController@edit_purchase_order_details');
+Route::post('/submit-edit-purchase-order-details/{idDetails}','PurchaseOrderController@submit_edit_purchase_order_details');
+Route::post('/submit-add-purchase-order-details','PurchaseOrderController@submit_add_purchase_order_details');
+// Route::post('/submit-edit-warehouse/{idWareHouse}','WareHouseController@submit_edit_warehouse');
+
+Route::get('/order-details-info/{idPurchaseOrder}/{idDetails}', 'PurchaseOrderController@order_details_info');
+
+
+//ajax
+Route::get('/locations/{warehouseId}', 'PurchaseOrderController@getLocations');
+Route::get('/shelves/{locationId}', 'PurchaseOrderController@getShelves');
+
+
 
 //Customer
 Route::get('/account','CustomerController@show_account_info');
@@ -92,6 +123,7 @@ Route::delete('/delete-address/{idAddress}','CustomerController@delete_address')
 Route::delete('/delete-wish/{idWish}','CustomerController@delete_wish');
 Route::post('/submit-register','CustomerController@submit_register');
 Route::post('/submit-login','CustomerController@submit_login');
+Route::get('/form-address','CustomerController@form_address');
 Route::post('/insert-address','CustomerController@insert_address');
 Route::post('/edit-address/{idAddress}','CustomerController@edit_address');
 Route::post('/fetch-address','CustomerController@fetch_address');
@@ -99,6 +131,12 @@ Route::post('/edit-profile','CustomerController@edit_profile');
 Route::post('/submit-change-password','CustomerController@submit_change_password');
 Route::post('/add-to-wishlist','CustomerController@add_to_wishlist');
 Route::post('/submit-compare','CustomerController@submit_compare');
+
+//address
+Route::get('/districts/{provinceId}', 'CustomerController@getDistricts');
+Route::get('/wards/{districtId}', 'CustomerController@getWards');
+// Route::get('/districts/{provinceId}', 'CustomerController@getDistricts')->where('provinceId', '[0-9]+');
+// Route::get('/wards/{districtId}', 'CustomerController@getWards')->where('districtId', '[0-9]+');
 
 //Admin
 Route::get('/admin','AdminController@show_login');
@@ -124,10 +162,7 @@ Route::post('/topPro-sort-by-date','AdminController@topPro_sort_by_date');
 //Brand
 Route::get('/manage-brand','BrandController@manage_brand');
 Route::get('/add-brand','BrandController@add_brand');
-Route::get('/edit-brand/{idBrand}','BrandController@edit_brand');
-Route::get('/delete-brand/{idBrand}','BrandController@delete_brand');
 Route::post('/submit-add-brand','BrandController@submit_add_brand');
-Route::post('/submit-edit-brand/{idBrand}','BrandController@submit_edit_brand');
 // Route::post('/fetch-brand','BrandController@fetch_brand');
 
 //Category
@@ -137,6 +172,38 @@ Route::get('/edit-category/{idCategory}','CategoryController@edit_category');
 Route::get('/delete-category/{idCategory}','CategoryController@delete_category');
 Route::post('/submit-add-category','CategoryController@submit_add_category');
 Route::post('/submit-edit-category/{idCategory}','CategoryController@submit_edit_category');
+
+//Supplier
+Route::get('/manage-suppliers','SupplierController@manage_suppliers');
+Route::get('/add-supplier','SupplierController@add_supplier');
+Route::get('/edit-supplier/{idSupplier}','SupplierController@edit_supplier');
+Route::get('/delete-supplier/{idSupplier}','SupplierController@delete_supplier');
+Route::post('/submit-add-supplier','SupplierController@submit_add_supplier');
+Route::post('/submit-edit-supplier/{idSupplier}','SupplierController@submit_edit_supplier');
+
+//banner
+Route::get('/manage-banner','BannerController@manage_banner');
+Route::get('/add-banner','BannerController@add_banner');
+Route::get('/edit-banner/{idBanner}','BannerController@edit_banner');
+Route::get('/delete-banner/{idBanner}','BannerController@delete_banner');
+Route::post('/submit-add-banner','BannerController@submit_add_banner');
+Route::post('/submit-edit-banner/{idBanner}','BannerController@submit_edit_banner');
+
+//WareHouse*
+Route::get('/manage-warehouse','WareHouseController@manage_warehouse');
+Route::get('/add-warehouse','WareHouseController@add_warehouse');
+Route::get('/edit-warehouse/{idWareHouse}','WareHouseController@edit_warehouse');
+Route::get('/delete-warehouse/{idWareHouse}','WareHouseController@delete_warehouse');
+Route::post('/submit-add-warehouse','WareHouseController@submit_add_warehouse');
+Route::post('/submit-edit-warehouse/{idWareHouse}','WareHouseController@submit_edit_warehouse');
+
+//Location*
+Route::get('/manage-location','LocationController@manage_location');
+Route::get('/add-location','LocationController@add_location');
+Route::get('/edit-location/{idLocation}','LocationController@edit_location');
+Route::get('/delete-location/{idLocation}','LocationController@delete_location');
+Route::post('/submit-add-location','LocationController@submit_add_location');
+Route::post('/submit-edit-location/{idLocation}','LocationController@submit_edit_location');
 
 //Attribute
 Route::get('/manage-attribute','AttributeController@manage_attribute');

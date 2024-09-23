@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>KidolShop</title>
+    <title>VinECoShop</title>
     <meta name="robots" content="noindex, follow" />
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -19,10 +19,13 @@
     <link rel="stylesheet" href="{{asset('public/kidolshop/css/vendor/bootstrap.min.css')}}">
 
     <!-- Icon Font CSS -->
+ 
+
     <link rel="stylesheet" href="{{asset('public/kidolshop/css/vendor/plazaicon.css')}}">
+    <link rel="stylesheet" href="{{asset('public/kidolshop/css/vendor/fontawesome/css/all.css')}}">
     <link rel="stylesheet" href="{{asset('public/kidolshop/css/vendor/themify-icons.css')}}">
     <link rel="stylesheet" href="{{asset('public/kidolshop/css/vendor/font-awesome.min.css')}}">
-
+    
     <!-- Plugins CSS -->
     <link rel="stylesheet" href="{{asset('public/kidolshop/css/plugins/animate.css')}}">
     <link rel="stylesheet" href="{{asset('public/kidolshop/css/plugins/swiper-bundle.min.css')}}">
@@ -91,7 +94,7 @@
                     <div class="row align-items-center">
                         <div class="col-lg-2">
                             <div class="header-logo">
-                                <a href="{{URL::to('/home')}}"><img src="{{asset('public/kidolshop/images/logo/logo.png')}}" alt=""></a>
+                                <a href="{{URL::to('/home')}}"><img src="" alt=""></a>
                             </div>
                         </div>
                         <div class="col-lg-7 position-static">
@@ -133,7 +136,7 @@
                                                 </li>
                                                 <li class="mega-dropdown">
                                                     <a class="menu-banner" href="#">
-                                                        <img src="{{asset('public/kidolshop/images/banner-navbar.jpg')}}" alt="">
+                                                        <img src="{{asset('public/kidolshop/images/1.png')}}" alt="">
                                                     </a>
                                                 </li>
                                             </ul>

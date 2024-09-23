@@ -119,11 +119,11 @@
                         <ul class="list-unstyled row mb-0">
                             @foreach($list_topProduct as $key => $topProduct)
                             <li class="col-lg-4 topPro-item">
-                                <div class="card card-block card-stretch mb-0">
+                                <div class="card card-block card-stretch mb-0" >
                                     <div class="card-body">
                                         <div class="bg-warning-light rounded">
                                             <?php $image = json_decode($topProduct->ImageName)[0];?>
-                                            <img src="{{asset('public/storage/kidoldash/images/product/'.$image)}}" class="style-img img-fluid m-auto p-3" alt="image">
+                                            <img src="{{asset('public/storage/kidoldash/images/product/'.$image)}}" class="style-img m-auto p-3" style="width: 100%; height: 158px;" alt="image">
                                         </div>
                                         <div class="style-text text-left mt-3">
                                             <h5 class="mb-1 limit-2-lines">{{$topProduct->ProductName}}</h5>

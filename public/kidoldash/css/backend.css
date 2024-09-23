@@ -84,6 +84,27 @@ html {
 article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
   display: block; }
 
+
+  .warehouse-locations, .warehouse-shelves {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.warehouse-locations .form-check, .warehouse-shelves .form-check {
+  position: relative;
+  display: block;
+  padding-left: 1.25rem;
+}
+
+.warehouse-locations h4, .warehouse-shelves h4 {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+
 body {
   margin: 0;
   font-family: "Roboto", sans-serif;
@@ -3348,13 +3369,13 @@ textarea.form-control {
 
 .badge-danger {
   color: #fff;
-  background-color: #E08DB4; }
+  background-color: #ff0000; }
   a.badge-danger:hover, a.badge-danger:focus {
     color: #fff;
-    background-color: #d5659a; }
+    background-color: #ff0000; }
   a.badge-danger:focus, a.badge-danger.focus {
     outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(224, 141, 180, 0.5); }
+    box-shadow: 0 0 0 0.2rem rgb(245, 2, 2); }
 
 .badge-light {
   color: #212529;
@@ -11019,7 +11040,7 @@ button.bg-danger:focus {
 
 .badge-danger {
   color: #fff !important;
-  background-color: #E08DB4 !important; }
+  background-color: #ff0000 !important; }
 
 a.badge-danger:hover, a.badge-danger:focus,
 button.badge-danger:hover,

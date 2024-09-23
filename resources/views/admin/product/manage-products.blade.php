@@ -41,8 +41,9 @@
                                 <td>{{$product->CategoryName}}</td>
                                 <td>{{$product->BrandName}}</td>
                                 <td>{{$product->QuantityTotal}}</td>
-                                @if($product->StatusPro == 1) <td><strong>Đang Hiện</strong></td>
-                                @else <td><strong>Đang Ẩn</strong></td> @endif
+                                @if($product->StatusPro == 1) <td><div class=" align-items-center badge badge-info">Đang Hiện</div></td>
+                                @elseif($product->StatusPro == 2) <td><div class=" align-items-center badge badge-warning">Chờ hàng</div></td>
+                                @else <td><div class=" align-items-center badge badge-danger">Đang ẩn</div></td> @endif
                                 <td>
                                     <form> @csrf
                                     <div class="d-flex align-items-center list-action">
@@ -57,6 +58,8 @@
                                             href="{{URL::to('/edit-product/'.$product->idProduct)}}"><i class="ri-pencil-line mr-0"></i></a>
                                         <a class="badge bg-warning mr-2" data-toggle="modal" data-tooltip="tooltip" data-target="#modal-delete-{{$product->idProduct}}" data-placement="top" title="Xóa" data-original-title="Xóa"
                                             style="cursor:pointer;"><i class="ri-delete-bin-line mr-0"></i></a>
+                                            <a class="badge bg-success mr-2" data-toggle="tooltip" data-placement="top" title="" data-original-title="Sửa"
+                                            href="{{URL::to('/expiry-product/'.$product->idProduct)}}"><i class="ri-arrow-right-s-line mr-0"></i></a>
                                     </div>
                                     </form>
                                 </td>

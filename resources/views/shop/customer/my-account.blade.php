@@ -30,6 +30,9 @@
                             <a href="{{URL::to('/change-password')}}"><i class="fa fa-key"></i> Đổi Mật Khẩu</a>
                         </li>
                         <li>
+                            <a href="{{URL::to('/form-address')}}"><i class="fa-solid fa-location-dot"></i> Địa chỉ nhận hàng</a>
+                        </li>
+                        <li>
                             <a href="{{URL::to('/ordered')}}"><i class="fa fa-shopping-cart"></i> Đơn Đặt Hàng</a>
                         </li>
                     </ul>
@@ -51,15 +54,15 @@
                                             <div class="col-md-8 mt-10">
                                                 <div class="account-address">
                                                     <div class="profile__info-body-left-item">
-                                                        <span class="profile__info-body-left-item-title">Tên Đăng Nhập</span>
+                                                        <span class="profile__info-body-left-item-title ml-30">Tên Đăng Nhập</span>
                                                         <span class="profile__info-body-left-item-text ml-20">{{$customer->username}}</span>
                                                     </div>
                                                     <div class="form-group mb-30">
-                                                        <span for="CustomerName" class="profile__info-body-left-item-title" style="margin: 0 28px 0 52px;">Họ Và Tên</span>
+                                                        <span for="CustomerName" class="profile__info-body-left-item-title ml-30" >Họ Và Tên</span>
                                                         <input id="CustomerName" name="CustomerName" class="ml-30" style="width:65%;" type="text" value="{{$customer->CustomerName}}">
                                                     </div>
                                                     <div class="form-group mb-30">
-                                                        <span class="profile__info-body-left-item-title" style="margin-left: 52px;">Số Điện Thoại</span>
+                                                        <span class="profile__info-body-left-item-title ml-30" >Số Điện Thoại</span>
                                                         <input class="ml-30" style="width:65%;" name="PhoneNumber" id="PhoneNumber" type="text" value="{{$customer->PhoneNumber}}">
                                                     </div>
                                                     <button class="btn btn-primary edit-profile" style="float: right;"><i class="fa fa-edit"></i> Sửa Hồ Sơ</button>

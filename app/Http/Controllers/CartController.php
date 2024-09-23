@@ -10,9 +10,13 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Cart;
 use App\Models\Voucher;
+use App\Models\Province;
+use App\Models\District;
+use App\Models\Ward;
 use App\Models\Bill;
 use App\Models\BillHistory;
 use App\Models\BillInfo;
+use App\Models\PurchaseOrderDetails;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\DB;
@@ -118,6 +122,7 @@ class CartController extends Controller
     public function payment(){
         $this->checkLogin();
         $this->checkCart();
+        $provinces= Province::get();
         $list_category = Category::get();
         $list_brand = Brand::get();
 
@@ -126,7 +131,22 @@ class CartController extends Controller
             ->join('product_attribute','product_attribute.idProAttr','=','cart.idProAttr')
             ->where('idCustomer',Session::get('idCustomer'))->get();
 
-        return view("shop.cart.payment")->with(compact('list_category','list_brand','list_pd_cart'));
+        return view("shop.cart.payment")->with(compact('list_category','list_brand','list_pd_cart','provinces'));
+    }
+
+    //load tỉnh/huyện/xã
+    public function getDistricts($provinceId)
+    {
+        $provinceId = (string) $provinceId;
+        $districts = District::where('idProvince', $provinceId)->get();
+        return response()->json($districts);
+    }
+
+    public function getWards($districtId)
+    {
+        $districtId = (string) $districtId;
+        $wards = Ward::where('idDistrict', $districtId)->get();
+        return response()->json($wards);
     }
 
     // Chuyển đến trang giỏ hàng trống
@@ -402,13 +422,49 @@ class CartController extends Controller
             $Bill->PhoneNumber = $get_address->PhoneNumber;
             $Bill->CustomerName = $get_address->CustomerName;
             $Bill->Payment = 'cash';
-    
+        
             $Bill->save();
-            $get_Bill = Bill::where('created_at', now())->where('idCustomer',Session::get('idCustomer'))->first();
-            $get_cart = Cart::where('idCustomer',Session::get('idCustomer'))->get();
-    
-            foreach($get_cart as $key => $cart)
-            {
+        
+            // Lấy hóa đơn vừa tạo
+            $get_Bill = Bill::where('created_at', now())->where('idCustomer', Session::get('idCustomer'))->first();
+            
+            // Lấy giỏ hàng của khách hàng
+            $get_cart = Cart::where('idCustomer', Session::get('idCustomer'))->get();
+        
+            foreach($get_cart as $key => $cart) {
+                $quantity_to_deduct = $cart->QuantityBuy;
+                
+                // Truy vấn danh sách các đơn nhập của sản phẩm theo thời gian
+                $purchase_orders = PurchaseOrderDetails::where('idProduct', $cart->idProduct)
+                                    ->orderBy('expiryDate', 'desc') // Sắp xếp theo hạn sử dụng hoặc ngày nhập
+                                    ->get();
+        
+                foreach($purchase_orders as $purchase_order) {
+                    if ($quantity_to_deduct > 0) {
+                        // Nếu số lượng đơn nhập còn lại >= số lượng cần trừ
+                        if ($purchase_order->quantity >= $quantity_to_deduct) {
+                            // Trừ số lượng trong đơn nhập
+                            $purchase_order->quantity -= $quantity_to_deduct;
+        
+                            // Trừ số lượng vào bảng order_product_attribute
+                            DB::update(DB::RAW('update order_product_attribute set quantity_available = quantity_available - '.$quantity_to_deduct.' where idProAttr = '.$cart->idProAttr.'' ));
+                            
+                            $purchase_order->save();
+                            $quantity_to_deduct = 0; // Không cần trừ thêm nữa
+                        } else {
+                            // Nếu số lượng đơn nhập ít hơn số cần trừ
+                            DB::update(DB::RAW('update order_product_attribute set quantity_available = quantity_available - '.$purchase_order->quantity.' where idProAttr = '.$cart->idProAttr.''));
+                            
+                            $quantity_to_deduct -= $purchase_order->quantity;
+                            $purchase_order->quantity = 0;
+                            $purchase_order->save();
+                        }
+                    } else {
+                        break; // Nếu đã trừ đủ số lượng thì dừng vòng lặp
+                    }
+                }
+        
+                // Cập nhật thông tin chi tiết hóa đơn
                 $data_billinfo = array(
                     'idBill' => $get_Bill->idBill,
                     'idProduct' => $cart->idProduct,
@@ -420,12 +476,22 @@ class CartController extends Controller
                     'updated_at' => now()
                 );
                 BillInfo::insert($data_billinfo);
+        
+                // Cập nhật tổng số lượng của sản phẩm
                 DB::update(DB::RAW('update product set QuantityTotal = QuantityTotal - '.$cart->QuantityBuy.' where idProduct = '.$cart->idProduct.''));
+        
+                // Cập nhật số lượng của phân loại sản phẩm
                 DB::update(DB::RAW('update product_attribute set Quantity = Quantity - '.$cart->QuantityBuy.' where idProAttr = '.$cart->idProAttr.''));
             }
-    
-            if($get_Bill->Voucher != '') DB::update(DB::RAW('update voucher set VoucherQuantity = VoucherQuantity - 1 where idVoucher = '.$data['idVoucher'].''));
-            Cart::where('idCustomer',Session::get('idCustomer'))->delete();
+        
+            // Cập nhật số lượng voucher nếu có
+            if ($get_Bill->Voucher != '') {
+                DB::update(DB::RAW('update voucher set VoucherQuantity = VoucherQuantity - 1 where idVoucher = '.$data['idVoucher'].''));
+            }
+        
+            // Xóa giỏ hàng của khách hàng sau khi thanh toán thành công
+            Cart::where('idCustomer', Session::get('idCustomer'))->delete();
+        
             return Redirect::to('success-order')->send();
         }
     }

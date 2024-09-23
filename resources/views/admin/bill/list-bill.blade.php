@@ -57,15 +57,38 @@
                                             data-original-title="Xác nhận đơn hàng"><i class="ri-thumb-up-line mr-0"></i>
                                         </button>
                                         <input type="hidden" name="Status" value="1">
-                                        <a class="badge bg-warning mr-2 delete-bill-btn" data-toggle="modal" data-target="#modal-delete-bill" data-placement="top" data-original-title="Hủy đơn hàng"
+                                        {{-- <a class="badge bg-warning mr-2 delete-bill-btn" data-toggle="modal" data-target="#modal-delete-bill" data-placement="top" data-original-title="Hủy đơn hàng"
                                             data-id="{{$bill->idBill}}" style="cursor:pointer;"><i class="ri-delete-bin-line mr-0"></i>
+                                        </a> --}}
+                                        <a class="badge bg-warning mr-2 delete-bill-btn" data-toggle="modal" data-tooltip="tooltip" data-target="#modal-status-{{$bill->idBill}}" data-placement="top" title="Xác nhận hủy đơn hàng" data-original-title="hủy"
+                                            style="cursor:pointer;"><i class="fa fa-trash"></i>
                                         </a>
                                         @elseif($bill->Status == 1)
                                         <button class="badge badge-info mr-2 momo" style="border:none;" data-toggle="tooltip" data-placement="top" title="" 
                                             data-original-title="Xác nhận hoàn thành"><i class="ri-thumb-up-line mr-0"></i>
                                         </button>
+                                       
                                         <input type="hidden" name="Status" value="2">
                                         @endif   
+                                    </div>
+                                    <div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" id="modal-status-{{$bill->idBill}}"  aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Thông báo</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">×</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Bạn có muốn xác nhận hủy đơn có mã #{{$bill->idBill}} không?</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-light" data-dismiss="modal">Trở về</button>
+                                                    <a href="{{URL::to('/delete-order/'.$bill->idBill)}}" type="button" class="btn btn-primary">Xác nhận</a>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     </form>
                                 </td>
@@ -106,6 +129,7 @@
         APP_URL = '{{url('/')}}' ;
         $(".delete-bill-btn").on("click", function() {
             var idBill = $(this).data("id");
+            console.log(idBill)
             $(".content-delete").html("Bạn có muốn hủy đơn hàng #" +idBill+ " không?");
 
             $("#delete-bill-confirm").on("click", function() {

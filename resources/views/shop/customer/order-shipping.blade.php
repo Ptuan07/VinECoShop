@@ -30,6 +30,9 @@
                             <a href="{{URL::to('/change-password')}}"><i class="fa fa-key"></i> Đổi Mật Khẩu</a>
                         </li>
                         <li>
+                            <a href="{{URL::to('/form-address')}}"><i class="fa-solid fa-location-dot"></i> Địa chỉ nhận hàng</a>
+                        </li>
+                        <li>
                             <a class="active"><i class="fa fa-shopping-cart"></i> Đơn Đặt Hàng</a>
                         </li>
                     </ul>

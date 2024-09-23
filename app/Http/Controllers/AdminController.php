@@ -363,7 +363,7 @@ class AdminController extends Controller
                     <div class="card card-block card-stretch mb-0">
                         <div class="card-body">
                             <div class="bg-warning-light rounded">
-                                <img src="public/storage/kidoldash/images/product/'.$image.'" class="style-img img-fluid m-auto p-3" alt="image">
+                                <img src="public/storage/kidoldash/images/product/'.$image.'" class="style-img m-auto p-3" alt="image" style="width: 100%; height: 170px;">
                             </div>
                             <div class="style-text text-left mt-3">
                                 <h5 class="mb-1 limit-2-lines">'.$topProduct->ProductName.'</h5>

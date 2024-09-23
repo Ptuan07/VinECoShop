@@ -30,6 +30,9 @@
                             <a href="{{URL::to('/change-password')}}"><i class="fa fa-key"></i> Đổi Mật Khẩu</a>
                         </li>
                         <li>
+                            <a href="{{URL::to('/form-address')}}"><i class="fa-solid fa-location-dot"></i> Địa chỉ nhận hàng</a>
+                        </li>
+                        <li>
                             <a class="active"><i class="fa fa-shopping-cart"></i> Đơn Đặt Hàng</a>
                         </li>
                     </ul>
@@ -102,11 +105,32 @@
                                             <td class="d-flex justify-content-center">
                                                 <a class="view-hover h3 mr-2" href="{{URL::to('/ordered-info/'.$bill->idBill)}}" data-toggle="tooltip" data-placement="top" title="" data-original-title="Xem chi tiết"><i class="fa fa-eye"></i></a>
                                                 @if($bill->Status == 0)
-                                                <a class="view-hover h3 ml-2 delete-bill-btn" data-toggle="modal" data-target="#modal-delete-bill" data-id="{{$bill->idBill}}"><i class="fa fa-trash"></i></a>                                
+                                                <a class="view-hover h3 ml-2 delete-bill-btn" data-toggle="modal" data-tooltip="tooltip" data-target="#modal-status-{{$bill->idBill}}" data-placement="top" title="Xác nhận hủy đơn hàng" data-original-title="hủy"
+                                                    style="cursor:pointer;"><i class="fa fa-trash"></i>
+                                                </a>                               
                                                 @endif
                                                 <!-- <button class="view-hover h3" style=" border:none; background-color: transparent;" data-toggle="tooltip" data-placement="top" title="" data-original-title="Xác nhận hoàn thành"><i class="fa fa-check-circle"></i></button>
                                                 <input type="hidden" name="Status" value="2"> -->
                                             </td>
+                                            <div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" id="modal-status-{{$bill->idBill}}"  aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Thông báo</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">×</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p>Bạn có muốn xác nhận hủy đơn có mã #{{$bill->idBill}} không?</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-light" data-dismiss="modal">Trở về</button>
+                                                            <a href="{{URL::to('/delete-order/'.$bill->idBill)}}" type="button" class="btn btn-primary">Xác nhận</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             </form>
                                         </tr>
                                         @endforeach

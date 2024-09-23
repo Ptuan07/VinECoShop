@@ -33,8 +33,7 @@
                                                 <td style="padding-left:12px !important;">{{$address->CustomerName}}</td>
                                                 <td style="padding-left:12px !important;">{{$address->PhoneNumber}}</td>
                                                 <td style="padding-left:12px !important;">{{$address->Address}}</td>
-                                            </tr>
-                                        </tbody>
+                                            </tr> 
                                     </table>
                                 </div>
                             </div>

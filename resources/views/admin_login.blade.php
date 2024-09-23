@@ -39,6 +39,7 @@
                                        echo '<span class="text-danger">'.$message.'</span>';
                                        Session::put('message', null);
                                     }
+                                    
                                  ?>
                                  <form action="{{URL::to('/admin-login')}}" method="POST">
                                     @csrf

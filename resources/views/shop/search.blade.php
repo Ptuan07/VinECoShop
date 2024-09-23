@@ -3,7 +3,7 @@
 
 
 <!--Page Banner Start-->
-<div class="page-banner" style="background-image: url(public/kidolshop/images/banner/banner-shop.png);">
+<div class="page-banner" style="background-image: url(public/kidolshop/images/banner/pngtree-organic-vegetables-promotion-simple-banner-picture-image_1070365.jpg);">
     <div class="container">
         <div class="page-banner-content text-center">
             <h2 class="title">Tìm Kiếm Sản Phẩm</h2>
@@ -93,18 +93,19 @@
                             <div class="col-lg-4 col-sm-6">
                                 <div class="single-product">
                                     <div class="product-image">
+                                        
                                         <?php $image = json_decode($pd->ImageName)[0];?>
                                         <a href="{{URL::to('/shop-single/'.$pd->ProductSlug)}}">
                                             <img src="{{asset('public/storage/kidoldash/images/product/'.$image)}}" alt="">
                                         </a>
 
                                         <?php
-                                            $SalePrice = $pd->Price;  
+                                            $SalePrice =  optional($pd->productAttributes->first())->Price;  
                                             $get_time_sale = ProductController::get_sale_pd($pd->idProduct); 
                                         ?>
 
                                         @if($get_time_sale)
-                                            <?php $SalePrice = $pd->Price - ($pd->Price/100) * $get_time_sale->Percent; ?>
+                                            <?php $SalePrice = optional($pd->productAttributes->first())->Price - (optional($pd->productAttributes->first())->Price/100) * $get_time_sale->Percent; ?>
                                             <div class="product-countdown">
                                                 <div data-countdown="{{$get_time_sale->SaleEnd}}"></div>
                                             </div>
@@ -133,12 +134,17 @@
                                         </ul> -->
                                         <h4 class="product-name"><a href="{{URL::to('/shop-single/'.$pd->ProductSlug)}}">{{$pd->ProductName}}</a></h4>
                                         <div class="price-box">
-                                            @if($SalePrice < $pd->Price)
-                                                <span class="old-price">{{number_format($pd->Price,0,',','.')}}đ</span>
+                                            @if($SalePrice < optional($pd->productAttributes->first())->Price)
+                                                <span class="old-price">{{number_format(optional($pd->productAttributes->first())->Price,0,',','.')}}đ</span>
                                                 <span class="current-price">{{number_format(round($SalePrice,-3),0,',','.')}}đ</span>
                                             @else
-                                                <span class="current-price">{{number_format($pd->Price,0,',','.')}}đ</span>
+                                                <span class="current-price">{{number_format(optional($pd->productAttributes->first())->Price,0,',','.')}}đ</span>
                                             @endif
+                                        </div>
+                                    </div>
+                                    <div class="product-action d-flex flex-wrap">
+                                        <div class="action btn-app">
+                                            <a href="{{URL::to('/shop-single/'.$pd->ProductSlug)}}" class="btn btn-primary btn-app add-to-cart">Xem sản phẩm</a>
                                         </div>
                                     </div>
                                 </div>
@@ -193,6 +199,11 @@
                                     @else
                                         <span class="current-price">{{number_format($pd->Price,0,',','.')}}đ</span>
                                     @endif
+                                </div>
+                                <div class="product-action d-flex flex-wrap">
+                                    <div class="action btn-app">
+                                        <a href="{{URL::to('/shop-single/'.$pd->ProductSlug)}}" class="btn btn-primary btn-app add-to-cart">Xem sản phẩm</a>
+                                    </div>
                                 </div>
                                 <p>{!!$pd->ShortDes!!}</p>
 
@@ -352,19 +363,20 @@
                                         <h4 class="title"><a class="two-line" href="{{URL::to('/shop-single/'.$top_pd->ProductSlug)}}">{{$top_pd->ProductName}}</a></h4>
                                         <span class="text-primary h6">Đã bán: {{$top_pd->Sold}}</span>
                                         <?php
-                                            $SalePrice = $top_pd->Price;  
+                                            $SalePrice = optional($top_pd->productAttributes->first())->Price;  
                                             $get_time_sale = ProductController::get_sale_pd($top_pd->idProduct); 
-                                            if($get_time_sale) $SalePrice = $top_pd->Price - ($top_pd->Price/100) * $get_time_sale->Percent;
+                                            if($get_time_sale) $SalePrice = optional($top_pd->productAttributes->first())->Price - (optional($top_pd->productAttributes->first())->Price/100) * $get_time_sale->Percent;
                                         ?>
                                         <div class="price-box">
-                                            @if($SalePrice < $top_pd->Price)
-                                                <span class="old-price">{{number_format($top_pd->Price,0,',','.')}}đ</span>
+                                            @if($SalePrice < optional($top_pd->productAttributes->first())->Price)
+                                            <span class="old-price">{{number_format(optional($top_pd->productAttributes->first())->Price,0,',','.')}}đ</span>
                                                 <span class="current-price">{{number_format(round($SalePrice,-3),0,',','.')}}đ</span>
                                             @else
-                                                <span class="current-price">{{number_format($top_pd->Price,0,',','.')}}đ</span>
+                                            <span class="current-price">{{number_format(optional($top_pd->productAttributes->first())->Price,0,',','.')}}đ</span>
                                             @endif
                                         </div>
                                     </div>
+                                    
                                 </div>
                             </li>
                             @endforeach

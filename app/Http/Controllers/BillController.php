@@ -32,7 +32,11 @@ class BillController extends Controller
         public function list_bill(){
             $this->checkLogin_Admin();
             $list_bill = Bill::join('customer','bill.idCustomer','=','customer.idCustomer')->whereNotIn('Status',[99])
-            ->select('customer.username','customer.PhoneNumber as CusPhone','bill.*')->get();
+            ->select('customer.username','customer.PhoneNumber as CusPhone','bill.*')
+            ->orderBy('bill.created_at', 'desc') 
+            ->get();
+            // dd($list_bill);
+            // die();
             return view("admin.bill.list-bill")->with(compact('list_bill'));
         }
 
@@ -139,6 +143,28 @@ class BillController extends Controller
                 DB::update('update product_attribute set Quantity = Quantity + ? where idProAttr = ?',[$bi->QuantityBuy,$bi->idProAttr]);
                 DB::update('update product set QuantityTotal = QuantityTotal + ? where idProduct = ?',[$bi->QuantityBuy,$bi->idProduct]);
             }
+        }
+
+        public function delete_order($idBill){
+            $BillHistory = new BillHistory();
+            $BillHistory->idBill = $idBill;
+            $BillHistory->AdminName = Session::get('AdminName');
+            $BillHistory->Status = 99;
+            $BillHistory->save();
+            Bill::find($idBill)->update(['Status' => '99']);
+            $Bill = Bill::find($idBill);
+            if($Bill->Voucher != ''){
+                $Voucher = explode("-",$Bill->Voucher);
+                $idVoucher = $Voucher[0];
+                DB::update('update voucher set VoucherQuantity = VoucherQuantity + 1 where idVoucher = ?',[$idVoucher]);
+            } 
+            
+            $BillInfo = BillInfo::where('idBill',$idBill)->get();
+            foreach($BillInfo as $key => $bi){
+                DB::update('update product_attribute set Quantity = Quantity + ? where idProAttr = ?',[$bi->QuantityBuy,$bi->idProAttr]);
+                DB::update('update product set QuantityTotal = QuantityTotal + ? where idProduct = ?',[$bi->QuantityBuy,$bi->idProduct]);
+            }
+            return redirect()->back();
         }
 
     /* ---------- End Admin ---------- */
